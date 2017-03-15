@@ -4,16 +4,10 @@
 #include <xclassifier.h>
 #include <xtime_l.h>
 #include "data.h"
+#include "test.h"
 #include "testData.h"
 #include "alpha.h"
 #include "SV.h"
-
-#define ASIZE(a)	(sizeof(a) / sizeof((a)[0]))
-
-static data_t testDataI[ASIZE(testData) / N][N];
-static data_t SVsI[ASIZE(SVs) / N][N];
-static data_t alphaI[ASIZE(SVsI)];
-static data_t biasI;
 
 // HLS HW instance
 XClassifier cls;
@@ -23,48 +17,22 @@ XScuGic ScuGic;
 volatile static int Run = 0;
 volatile static int ResultAvail = 0;
 
-int setup_interrupt();
-
-static inline double dotp_d(double *x, double *y)
-{
-	double sum = 0;
-	for (size_t i = N; i != 0; i--)
-		sum += *x++ * *y++;
-	return sum;
-}
-
-static inline double k_d(double *psv, double *x)
-{
-	double dot = dotp_d(psv, x) * 2.d;
-	return tanh(dot);
-}
-
-static unsigned int test_cls_d()
-{
-	int err = 0;
-	int *label = &testDataLabel[0];
-	double *x = &testData[0];
-	for (size_t ix = ASIZE(testData)  / N; ix != 0; ix--) {
-		double sum = bias;
-		double *psv = &SVs[0], *pa = &alpha[0];
-		for (size_t i = ASIZE(SVs) / N; i != 0; i--) {
-			sum += k_d(psv, x) * *pa++;
-			psv += 16;
-		}
-		err += (sum < 0) != *label++;
-		x += N;
-	}
-	return err;
-}
+data_t testDataI[ASIZE(testData) / N][N];
+data_t SVsI[ASIZE(SVs) / N][N];
+data_t alphaI[ASIZE(SVsI)];
+data_t biasI;
 
 struct test_t {
 	void (*pre)();
 	unsigned int (*test)();
 	const char *name;
 } tests[] = {
-	{0, test_cls_d, "double precision classifier"},
+	{0, test_cls_double, "double precision classifier"},
+	{0, test_cls_fixed, "fixed point classifier"},
 	{0, 0, 0},
 };
+
+int setup_interrupt();
 
 void cls_isr(void *InstancePtr)
 {
@@ -116,7 +84,7 @@ int main()
 
 	struct test_t *pt = &tests[0];
 	while (pt->test) {
-		printf("\r\n<%s> starting...\r\n", pt->name);
+		printf("<%s> starting...\r\n", pt->name);
 		if (pt->pre)
 			pt->pre();
 
