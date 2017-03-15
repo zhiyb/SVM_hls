@@ -16,7 +16,7 @@ static inline double k(double *psv, double *x)
 
 unsigned int test_cls_double()
 {
-	int err = 0;
+	unsigned int err = 0;
 	int *label = &testDataLabel[0];
 	double *x = &testData[0];
 	for (size_t ix = ASIZE(testData)  / N; ix != 0; ix--) {

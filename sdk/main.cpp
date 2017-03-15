@@ -29,6 +29,8 @@ struct test_t {
 } tests[] = {
 	{0, test_cls_double, "double precision classifier"},
 	{0, test_cls_fixed, "fixed point classifier"},
+	{test_cls_hls_polling_pre, test_cls_hls_polling, "HLS classifier by polling"},
+	{test_cls_hls_interrupt_pre, test_cls_hls_interrupt, "HLS classifier by interrupt"},
 	{0, 0, 0},
 };
 
@@ -36,6 +38,9 @@ int setup_interrupt();
 
 void cls_isr(void *InstancePtr)
 {
+	ResultAvail = 1;
+	// clear the local interrupt
+	XClassifier_InterruptClear((XClassifier *)InstancePtr, 1);
 }
 
 int main()
@@ -84,7 +89,7 @@ int main()
 
 	struct test_t *pt = &tests[0];
 	while (pt->test) {
-		printf("<%s> starting...\r\n", pt->name);
+		//printf("<%s> starting...\r\n", pt->name);
 		if (pt->pre)
 			pt->pre();
 
@@ -95,6 +100,7 @@ int main()
 		pt++;
 	}
 
+	print("SVM classifiers testing done.\r\n");
 	return 0;
 }
 
@@ -139,4 +145,21 @@ int setup_interrupt()
 	//print("Enable the Adder ISR\n\r");
 	XScuGic_Enable(&ScuGic, XPAR_FABRIC_CLASSIFIER_0_INTERRUPT_INTR);
 	return XST_SUCCESS;
+}
+
+void interrupt_enable(bool e)
+{
+	if (e) {
+		XClassifier_InterruptEnable(&cls, 1);
+		XClassifier_InterruptGlobalEnable(&cls);
+	} else {
+		XClassifier_InterruptDisable(&cls, 1);
+		XClassifier_InterruptGlobalDisable(&cls);
+	}
+}
+
+void interrupt_wait()
+{
+	while (!ResultAvail);
+	ResultAvail = 0;
 }

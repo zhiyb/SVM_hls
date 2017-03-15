@@ -17,7 +17,7 @@ static inline data_t k(data_t *psv, data_t *x)
 
 unsigned int test_cls_fixed()
 {
-	int err = 0;
+	unsigned int err = 0;
 	int *label = &testDataLabel[0];
 	data_t *x = &testDataI[0][0];
 	for (size_t ix = ASIZE(testData)  / N; ix != 0; ix--) {
