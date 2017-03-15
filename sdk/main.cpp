@@ -4,11 +4,10 @@
 #include <xclassifier.h>
 #include <xtime_l.h>
 #include "data.h"
+#include "test.h"
 #include "testData.h"
-
-#define ASIZE(a)	(sizeof(a) / sizeof((a)[0]))
-
-static data_t testDataI[ASIZE(testData) / 16][16];
+#include "alpha.h"
+#include "SV.h"
 
 // HLS HW instance
 XClassifier cls;
@@ -18,22 +17,22 @@ XScuGic ScuGic;
 volatile static int Run = 0;
 volatile static int ResultAvail = 0;
 
-int setup_interrupt();
-
-static int test_tanh()
-{
-	XTime itvl, ticks[3];
-	return 0;
-}
+data_t testDataI[ASIZE(testData) / N][N];
+data_t SVsI[ASIZE(SVs) / N][N];
+data_t alphaI[ASIZE(SVsI)];
+data_t biasI;
 
 struct test_t {
 	void (*pre)();
-	int (*test)();
+	unsigned int (*test)();
 	const char *name;
 } tests[] = {
-	{0, test_tanh, "double precision tanh()"},
+	{0, test_cls_double, "double precision classifier"},
+	{0, test_cls_fixed, "fixed point classifier"},
 	{0, 0, 0},
 };
+
+int setup_interrupt();
 
 void cls_isr(void *InstancePtr)
 {
@@ -68,22 +67,31 @@ int main()
 	print("Converting data...\r\n");
 	XTime_SetTime(0);
 	double *pf = &testData[0];
-	data_t *p = &testDataI[0][0];
+	data_t *pi = &testDataI[0][0];
 	for (size_t i = ASIZE(testData); i != 0; i--)
-		*p++ = FtoI(*pf++);
+		*pi++ = FtoI(*pf++);
+	pf = &SVs[0];
+	pi = &SVsI[0][0];
+	for (size_t i = ASIZE(SVs); i != 0; i--)
+		*pi++ = FtoI(*pf++);
+	pf = &alpha[0];
+	pi = &alphaI[0];
+	for (size_t i = ASIZE(alpha); i != 0; i--)
+		*pi++ = FtoI(*pf++);
+	biasI = FtoI(bias);
 	XTime_GetTime(&itvl);
 	printf("Conversion finished, %llu ticks\r\n", itvl);
 
 	struct test_t *pt = &tests[0];
 	while (pt->test) {
-		printf("\r\nExecuting test <%s>\r\n", pt->name);
+		printf("<%s> starting...\r\n", pt->name);
 		if (pt->pre)
 			pt->pre();
 
 		XTime_SetTime(0);
-		pt->test();
+		unsigned int err = pt->test();
 		XTime_GetTime(&itvl);
-		printf("Finished <%s>, %llu ticks\r\n", pt->name, itvl);
+		printf("<%s> finished, %llu ticks, error count %u\r\n", pt->name, itvl, err);
 		pt++;
 	}
 
