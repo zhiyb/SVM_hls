@@ -2,6 +2,7 @@
 #define DATA_H
 
 #include <stdint.h>
+#include <math.h>
 
 #define N	16ul
 
