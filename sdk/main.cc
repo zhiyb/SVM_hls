@@ -5,10 +5,15 @@
 #include <xtime_l.h>
 #include "data.h"
 #include "testData.h"
+#include "alpha.h"
+#include "SV.h"
 
 #define ASIZE(a)	(sizeof(a) / sizeof((a)[0]))
 
-static data_t testDataI[ASIZE(testData) / 16][16];
+static data_t testDataI[ASIZE(testData) / N][N];
+static data_t SVsI[ASIZE(SVs) / N][N];
+static data_t alphaI[ASIZE(SVsI)];
+static data_t biasI;
 
 // HLS HW instance
 XClassifier cls;
@@ -20,18 +25,44 @@ volatile static int ResultAvail = 0;
 
 int setup_interrupt();
 
-static int test_tanh()
+static inline double dotp_d(double *x, double *y)
 {
-	XTime itvl, ticks[3];
-	return 0;
+	double sum = 0;
+	for (size_t i = N; i != 0; i--)
+		sum += *x++ * *y++;
+	return sum;
+}
+
+static inline double k_d(double *psv, double *x)
+{
+	double dot = dotp_d(psv, x) * 2.d;
+	return tanh(dot);
+}
+
+static unsigned int test_cls_d()
+{
+	int err = 0;
+	int *label = &testDataLabel[0];
+	double *x = &testData[0];
+	for (size_t ix = ASIZE(testData)  / N; ix != 0; ix--) {
+		double sum = bias;
+		double *psv = &SVs[0], *pa = &alpha[0];
+		for (size_t i = ASIZE(SVs) / N; i != 0; i--) {
+			sum += k_d(psv, x) * *pa++;
+			psv += 16;
+		}
+		err += (sum < 0) != *label++;
+		x += N;
+	}
+	return err;
 }
 
 struct test_t {
 	void (*pre)();
-	int (*test)();
+	unsigned int (*test)();
 	const char *name;
 } tests[] = {
-	{0, test_tanh, "double precision tanh()"},
+	{0, test_cls_d, "double precision classifier"},
 	{0, 0, 0},
 };
 
@@ -68,22 +99,31 @@ int main()
 	print("Converting data...\r\n");
 	XTime_SetTime(0);
 	double *pf = &testData[0];
-	data_t *p = &testDataI[0][0];
+	data_t *pi = &testDataI[0][0];
 	for (size_t i = ASIZE(testData); i != 0; i--)
-		*p++ = FtoI(*pf++);
+		*pi++ = FtoI(*pf++);
+	pf = &SVs[0];
+	pi = &SVsI[0][0];
+	for (size_t i = ASIZE(SVs); i != 0; i--)
+		*pi++ = FtoI(*pf++);
+	pf = &alpha[0];
+	pi = &alphaI[0];
+	for (size_t i = ASIZE(alpha); i != 0; i--)
+		*pi++ = FtoI(*pf++);
+	biasI = FtoI(bias);
 	XTime_GetTime(&itvl);
 	printf("Conversion finished, %llu ticks\r\n", itvl);
 
 	struct test_t *pt = &tests[0];
 	while (pt->test) {
-		printf("\r\nExecuting test <%s>\r\n", pt->name);
+		printf("\r\n<%s> starting...\r\n", pt->name);
 		if (pt->pre)
 			pt->pre();
 
 		XTime_SetTime(0);
-		pt->test();
+		unsigned int err = pt->test();
 		XTime_GetTime(&itvl);
-		printf("Finished <%s>, %llu ticks\r\n", pt->name, itvl);
+		printf("<%s> finished, %llu ticks, error count %u\r\n", pt->name, itvl, err);
 		pt++;
 	}
 
