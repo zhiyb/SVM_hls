@@ -89,7 +89,14 @@ Dedicated hardware accelerators can perform a particular task faster then genera
 
 \subsection{Overview}
 
-Whole design flow chart
+\fref{fig:ip} shows the purposed SVM classifier accelerator architecture.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.6\columnwidth]{IP}
+	\caption{Flow chart of purposed SVM classifier IP core}
+	\label{fig:ip}
+\end{figure}
 
 \subsection{tanh calculation}
 
@@ -203,14 +210,6 @@ loop:   for (i = 0; i != N; i++)
 	\label{fig:sim}
 \end{figure*}
 
-
-
-\begin{figure}[!ht]
-	\centering
-	\includegraphics[width=\columnwidth]{none}
-	\caption{Performance analysis of unoptimised and pipelined loop}
-	\label{fig:none}
-\end{figure}
 
 
 \begin{table}[!ht]
