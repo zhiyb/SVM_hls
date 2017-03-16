@@ -176,13 +176,15 @@ The original implementation without any optimisation directives gives a maximum 
 	\end{tabular}
 \end{table}
 
-\improvi{the co-simulation is too long, only check with csim,show the result of synthesis}
+\improvi{Interpret the performance and resource usage values?}
+
+Running RTL co-simulation with all 2000 test vectors and this order of latency will be very time-consuming and not very useful. Therefore, only C simulation was used to ensure the correctness of the unoptimised design. RTL co-simulations were still used in later optimised design.
 
 \section{Performance optimisation}
 
 \subsection{Interface optimisation}
 
-\improvi{Array reshape, partition}
+The interface for specified input vectors was optimised by reducing the interface width to a minimum and using the \texttt{ARRAY\_RESHAPE} directive. This directive can combine multiple elements of the input vector to a single 32-bit buffer, reduces the number of data transfers needed between the ARM core and the hardware accelerator.
 
 \subsection{Throughput optimisation}
 
