@@ -26,7 +26,9 @@
   \usepackage[caption=false,font=footnotesize]{subfig}
 \fi
 
-\usepackage{listings,color}
+\usepackage[pdftex,dvipsnames]{xcolor}
+\usepackage{listings,xargs}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -59,6 +61,9 @@
 \newcommand{\eref}[1]{(\ref{#1})}
 \newcommand{\tref}[1]{\tablename~\ref{#1}}
 \newcommand{\lref}[1]{LISTING~\ref{#1}}
+
+\newcommandx{\improv}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommand{\improvi}[1]{\improv[inline]{#1}}
 
 \begin{document}
 
@@ -108,6 +113,10 @@ According to the provided sample data, vectors have a width of 16 elements and t
 
 \subsection{Dot product calculation}
 
+Dot product between 2 vectors was calculated using the module designed previously in Part I.
+
+\improvi{More descripsions}
+
 \subsection{\texttt{tanh} calculation}
 
 COordinate Rotation DIgital Computer (CORDIC) \cite{volder1959cordic} was used to calculate the \texttt{tanh} function.
@@ -120,6 +129,8 @@ CORDIC calculates trigonometric functions through vector rotation in 2-dimension
 
 The precision of CORDIC can be improved by allowing more iterations, however, the input range of CORDIC is non-ideal. The CORDIC implementation used in this design has an input range of about $\pm 1.10$ radians, but the sample dataset can give an input as large as $83.6$ radians.
 
+\improvi{The \texttt{fp\_tanh} conversion trick...}
+
 \subsection{SVM evaluator}
 
 \subsection{Hardware verification}
@@ -130,43 +141,43 @@ The precision of CORDIC can be improved by allowing more iterations, however, th
 
 \subsection{Design evaluation}
 
-the co-simulation is too long, only check with csim,show the result of synthesis
+\improvi{the co-simulation is too long, only check with csim,show the result of synthesis}
 
 \section{Performance optimisation}
 
 \subsection{Interface optimisation}
 
-Array reshape, partition
+\improvi{Array reshape, partition}
 
 \subsection{Throughput optimisation}
 
-Pipeline, loop unrolling
+\improvi{Pipeline, loop unrolling}
 
 \subsection{Clock timing issue}
 
-Not meeting target clock rate.
+\improvi{Not meeting target clock rate.
 
 Split long arithmetic operations on critical path.
 
-use one array as a cache and add the array together to get the final answer.
+use one array as a cache and add the array together to get the final answer.}
 
 \subsection{Design verification}
 
-check the answer with golden file(Co simulation)?
+\improvi{check the answer with golden file(Co simulation)?
 
 talk about the initialisation of the array?
 warning : the variable without initialisation?
-arrar[n] = {0} ?
+arrar[n] = {0} ?}
 
 \subsection{Design evaluation}
 
-Throughput, latency vs. Resource usage
+\improvi{Throughput, latency vs. Resource usage}
 
 \section{System implementation}
 
-IP core packaging
+\improvi{IP core packaging
 
-Software testing with SDK
+Software testing with SDK}
 
 \section{System evaluation}
 
