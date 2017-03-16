@@ -131,11 +131,17 @@ The precision of CORDIC can be improved by allowing more iterations, however, th
 
 \improvi{The \texttt{fp\_tanh} conversion trick...}
 
-\subsection{SVM evaluator}
+\subsection{SVM classifier}
+
+The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all Support Vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal.
+
+\improvi{Insert code here?}
 
 \subsection{Hardware verification}
 
 \subsubsection{Test bench}
+
+The design of SVM classifier was verified using C simulation test benches.
 
 \subsubsection{Reference generation}
 
