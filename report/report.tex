@@ -104,11 +104,21 @@ Dedicated hardware accelerators can perform a particular task faster then genera
 	\label{fig:ip}
 \end{figure}
 
-\subsection{tanh calculation}
+According to the provided sample data, vectors have a width of 16 elements and there are 1050 support vectors. These numbers were replaced by macro definitions in the design, which can be easily adjusted to meet the properties of potentially other sample data.
+
+\subsection{Dot product calculation}
+
+\subsection{\texttt{tanh} calculation}
+
+COordinate Rotation DIgital Computer (CORDIC) \cite{volder1959cordic} was used to calculate the \texttt{tanh} function.
 
 \subsubsection{CORDIC}
 
+CORDIC calculates trigonometric functions through vector rotation in 2-dimension space. It can be generalised to calculate \texttt{sinh} and \texttt{cosh} functions. The computations involved with CORDIC are simple integer addition, subtraction and shifting. This makes it suitable to use on a resource constrained embedded platform.
+
 \subsubsection{Range and precision}
+
+The precision of CORDIC can be improved by allowing more iterations, however, the input range of CORDIC is non-ideal. The CORDIC implementation used in this design has an input range of about $\pm 1.10$ radians, but the sample dataset can give an input as large as $83.6$ radians.
 
 \subsection{SVM evaluator}
 
@@ -246,9 +256,9 @@ By evaluating the performance data of software and hardware implementation of th
 
 The data transfer inefficiency may be improved by using another type of interface, e.g. the AXI4-Stream interface. It transfers data in a sequential streaming manner, would be better than 10 discrete register data transfers.
 
-% references section
-%\bibliographystyle{IEEEtran}
-%\bibliography{Reference}
+% References section
+\bibliographystyle{IEEEtran}
+\bibliography{Reference}
 
 % that's all folks
 \end{document}
