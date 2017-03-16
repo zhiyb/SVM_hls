@@ -4,6 +4,7 @@
 *.jou
 *.str
 
+.Xil/
 bak/
 dotProduct/
 vivado/
