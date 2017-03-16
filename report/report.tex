@@ -141,11 +141,40 @@ The top-level SVM classifier was designed according to the flow chart \fref{fig:
 
 \subsubsection{Test bench}
 
-The design of SVM classifier was verified using C simulation test benches.
+The design of SVM classifier was verified using C simulation test benches. The test bench iterates through all \texttt{testData} vectors from the sample dataset and executes the classifier. The results from classifier were compared with \texttt{testDataLabel} ground truths from the same sample dataset. Any difference will be recorded, and an overall error rate will be calculated at the end of simulation.
 
 \subsubsection{Reference generation}
 
+A double precision example classifier implementation was available from the dataset. It produces 170 incorrect results from all 2000 ground truths values, corresponding to an error rate of $8.5 \%$. The results including errors from the double precision were considered the reference output, therefore it can reflect any precision mismatches between the hardware implementation and software double precision implementation.
+
 \subsection{Design evaluation}
+
+The original implementation without any optimisation directives gives a maximum latency of 164877 clock cycles, as shown by \tref{tbl:res_unopt}.
+
+\begin{table}[ht]
+	% increase table row spacing, adjust to taste
+	\renewcommand{\arraystretch}{1.3}
+	\caption{Performance and resource usage of unoptimised version}
+	\label{tbl:res_unopt}
+	\centering
+	% Some packages, such as MDW tools, offer better commands for making tables
+	% than the plain LaTeX2e tabular which is used here.
+	\begin{tabular}{llll}
+		\hline
+		Item			& Unoptimised	\\
+		\hline
+		Estimated clock timing	& $8.77$	\\
+		Latency			& $164877$	\\
+		Interval		& $164878$	\\
+		Co-simulation (average)	& $203$		\\
+		\hline
+		BRAM\_18K		& $36~(12\%)$	\\
+		DSP48E			& $6~(2\%)$	\\
+		FF			& $1436~(1\%)$	\\
+		LUT			& $4086~(7\%)$	\\
+		\hline
+	\end{tabular}
+\end{table}
 
 \improvi{the co-simulation is too long, only check with csim,show the result of synthesis}
 
