@@ -76,52 +76,82 @@
 \maketitle
 
 \begin{abstract}
-This course work aims to design and optimise an embedded system based SVM classifier with High Level Synthesis (HLS) language. The hardware implementation was optimised by various directives in HLS. In addition, the performance of software and hardware implementations were also assessed and compared in this excise.
+This course work aims to design and optimise a hardware Support Vector Machine (SVM) classifier on an embedded system using High Level Synthesis (HLS) language. The hardware implementation was optimised by various directives in HLS. In addition, the performance of software and hardware implementations were also assessed and compared in this excise.
 \end{abstract}
 
 \section{Introduction}
 
-Dedicated hardware accelerators can perform a particular task faster then generalised software design. However, there are a few trade-offs associated with using hardware accelerators. In this exercise, an SVM classifier IP core was developed and optimised using Vivado HLS toolkit. The procedure of the design and optimisation will be explained in details. Finally, the performance differences between hardware and software implementations were evaluated and discussed.
-
+Dedicated hardware accelerators can perform a particular task faster then generalised software design. However, there are a few trade-offs associated with using hardware accelerators. In this exercise, an SVM classifier IP core was developed and optimised on a Xilinx ZYNQ SoC FPGA using Vivado HLS toolkit. The procedure of the design and optimisation will be explained in details. Finally, the performance differences between hardware and software implementations were evaluated and discussed.
 
 \hfill \today
 
-\section{Initial IP Core Design}
-\subsection{Whole design flow chart}
-\subsection{tanh() Implementation}
-\subsubsection{CORDIC}?
-\subsubsection{Range? more first iteration?}
-\subsection{SVM classifier main function implementation}
-\subsection{golden file generation}
-\subsection{test bench design}
-\subsection{Evaluation initial design}
+\section{IP core implementation}
+
+\subsection{Overview}
+
+Whole design flow chart
+
+\subsection{tanh calculation}
+
+\subsubsection{CORDIC}
+
+\subsubsection{Range and precision}
+
+\subsection{SVM evaluator}
+
+\subsection{Hardware verification}
+
+\subsubsection{Test bench}
+
+\subsubsection{Reference generation}
+
+\subsection{Design evaluation}
+
 the co-simulation is too long, only check with csim,show the result of synthesis
 
-\section{Optimisation of IP core}
+\section{Performance optimisation}
 
-\subsection{Input optimisation}
+\subsection{Interface optimisation}
 
-Array partition
+Array reshape, partition
 
 \subsection{Throughput optimisation}
+
+Pipeline, loop unrolling
+
 \subsection{Clock timing issue}
-%\subsection{Calculation Progress optimisation}
+
+Not meeting target clock rate.
+
+Split long arithmetic operations on critical path.
+
 use one array as a cache and add the array together to get the final answer.
-\subsection{Evaluation of Optimisation}
-\subsubsection{check the answer with golden file(Co simulation)?}
+
+\subsection{Design verification}
+
+check the answer with golden file(Co simulation)?
+
 talk about the initialisation of the array?
 warning : the variable without initialisation?
 arrar[n] = {0} ?
 
+\subsection{Design evaluation}
 
-\section{Implementation}
-\subsection{IP Packaging}
-\subsection{Software testing with SDK}
+Throughput, latency vs. Resource usage
 
-\section{Evaluation}
+\section{System implementation}
+
+IP core packaging
+
+Software testing with SDK
+
+\section{System evaluation}
+
+\subsection{Performance and resource usage}
+
 \subsection{Reflection and Limitation}
 
-
+\iffalse
 
 \begin{lstlisting}[caption={High level synthesis design for dot product},captionpos=b,label=lst:dotp]
 #include <stdint.h>
@@ -203,7 +233,7 @@ loop:   for (i = 0; i != N; i++)
 	\end{tabular}
 \end{table}
 
-
+\fi
 
 \section{Conclusion}
 
