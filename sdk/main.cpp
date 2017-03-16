@@ -74,7 +74,7 @@ int main()
 	double *pf = &testData[0];
 	data_t *pi = &testDataI[0][0];
 	for (size_t i = ASIZE(testData); i != 0; i--)
-		*pi++ = FtoI(*pf++);
+		*pi++ = FtoI(*pf++) & 0xffff;
 	pf = &SVs[0];
 	pi = &SVsI[0][0];
 	for (size_t i = ASIZE(SVs); i != 0; i--)

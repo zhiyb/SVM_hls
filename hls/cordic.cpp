@@ -5,7 +5,7 @@
 #define KP	3392	// 0.8281593609602f
 #define KPI	/*4946*/	1.207497067763f
 
-void cordic_tanh(mdata_t theta, ldata_t *out)
+void cordic(mdata_t theta, ldata_t *cosh, ldata_t *sinh)
 {
 #pragma HLS INLINE
 	static const ldata_t lut[] = {
@@ -19,7 +19,7 @@ void cordic_tanh(mdata_t theta, ldata_t *out)
 	};
 
 	static const int shift[] = {
-		1, 1, 1, 1, 1, 2, 3, 4, 4, 5, 6, 7, 8
+		/*1, 1, 1, 1,*/ 1, 2, 3, 4, 4, 5, //6, 7, 8
 	};
 
 	data_t x = KPI, y = 0;
@@ -35,5 +35,6 @@ loop:	for (int i = 0; i != sizeof(shift) / sizeof(shift[0]); i++) {
 		theta = theta - (d * lut[it - 1u]);
 	}
 
-	*out = y / x;
+	*cosh = x;
+	*sinh = y;
 }

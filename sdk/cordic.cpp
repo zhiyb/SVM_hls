@@ -12,10 +12,10 @@ static data_t lut[] = {
 };
 
 static data_t shift[] = {
-	1, 1, 1, 1, 1, 2, 3, 4, 4, 5, 6, 7, 8//, 9, 10, 11, 12, 13, 13,
+	/*1, 1, 1, 1,*/ 1, 2, 3, 4, 4, //5, //6, 7, 8//, 9, 10, 11, 12, 13, 13,
 };
 
-data_t cordic_tanh(data_t theta)
+void cordic(data_t theta, data_t *cosh, data_t *sinh)
 {
 	data_t x = KPI, y = 0;
 
@@ -28,5 +28,7 @@ data_t cordic_tanh(data_t theta)
 		theta = theta - d * lut[it - 1u];
 	}
 
-	return (y << FRAC) / x;
+	*cosh = x;
+	*sinh = y;
+	//return (y << FRAC) / x;
 }
