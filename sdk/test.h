@@ -17,7 +17,7 @@ extern double bias;
 extern data_t biasI;
 
 extern double testData[TEST_SIZE * N];
-extern data_t testDataI[ASIZE(testData) / N][N];
+extern int16_t testDataI[ASIZE(testData) / N][N];
 extern int testDataLabel[TEST_SIZE];
 
 extern XClassifier cls;

@@ -17,7 +17,7 @@ XScuGic ScuGic;
 volatile static int Run = 0;
 volatile static int ResultAvail = 0;
 
-data_t testDataI[ASIZE(testData) / N][N];
+int16_t testDataI[ASIZE(testData) / N][N];
 data_t SVsI[ASIZE(SVs) / N][N];
 data_t alphaI[ASIZE(SVsI)];
 data_t biasI;
@@ -72,21 +72,23 @@ int main()
 	print("Converting data...\r\n");
 	XTime_SetTime(0);
 	double *pf = &testData[0];
-	data_t *pi = &testDataI[0][0];
+	int16_t *pi = &testDataI[0][0];
 	for (size_t i = ASIZE(testData); i != 0; i--)
 		*pi++ = FtoI(*pf++) & 0xffff;
 	pf = &SVs[0];
-	pi = &SVsI[0][0];
+	data_t *p = &SVsI[0][0];
 	for (size_t i = ASIZE(SVs); i != 0; i--)
-		*pi++ = FtoI(*pf++);
+		*p++ = FtoI(*pf++);
 	pf = &alpha[0];
-	pi = &alphaI[0];
+	p = &alphaI[0];
 	for (size_t i = ASIZE(alpha); i != 0; i--)
-		*pi++ = FtoI(*pf++);
+		*p++ = FtoI(*pf++);
 	biasI = FtoI(bias);
 	XTime_GetTime(&itvl);
 	printf("Conversion finished, %llu ticks\r\n", itvl);
 
+test:
+	printf("\r\nStarting tests...\r\n");
 	struct test_t *pt = &tests[0];
 	while (pt->test) {
 		//printf("<%s> starting...\r\n", pt->name);
@@ -101,6 +103,9 @@ int main()
 	}
 
 	print("SVM classifiers testing done.\r\n");
+	while (getchar() != '\r');
+	goto test;
+
 	return 0;
 }
 
