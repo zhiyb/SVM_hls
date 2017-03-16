@@ -3,6 +3,6 @@
 
 #include "data.h"
 
-data_t cordic_tanh(data_t theta);
+void cordic(data_t theta, data_t *cosh, data_t *sinh);
 
 #endif

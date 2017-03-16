@@ -3,7 +3,8 @@
 
 #include "data.h"
 
-void cordic_tanh(mdata_t theta, ldata_t *out);
+void cordic(mdata_t theta, ldata_t *cosh, ldata_t *sinh);
 float f_cordic_tanh(float theta);
+void fp_tanh(mdata_t theta, ldata_t *output);
 
 #endif

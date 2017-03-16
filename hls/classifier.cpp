@@ -44,31 +44,34 @@ static void k(ldata_t u[N], ldata_t v[N], ldata_t *output)
 	mdata_t res;
 	dotp(u, v, &res);
 	res = res << 1u;	// * 2
-	cordic_tanh(res, output);
+	//ldata_t cosh, sinh;
+	//cordic(res, &cosh, &sinh);
+	//*output = sinh / cosh;
+	fp_tanh(res, output);
 }
 
 void classifier(ldata_t x[N], int *output)
 {
 //#pragma HLS ARRAY_PARTITION variable=x cyclic factor=16 dim=1
 #pragma HLS ARRAY_RESHAPE variable=x cyclic factor=16 dim=1
-#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=12 dim=1
+#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=10 dim=1
 //#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=16 dim=2
 #pragma HLS ARRAY_RESHAPE variable=SVs cyclic factor=16 dim=2
-#pragma HLS ARRAY_PARTITION variable=alpha cyclic factor=12 dim=1
+#pragma HLS ARRAY_PARTITION variable=alpha cyclic factor=10 dim=1
 #pragma HLS INTERFACE s_axilite port=output
 #pragma HLS INTERFACE s_axilite port=return
 #pragma HLS INTERFACE s_axilite port=x
 	hdata_t sum = 0, sums[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=12 dim=1
+#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=10 dim=1
 loop:	for (int i = 0; i != ASIZE(alpha); i++) {
 #pragma HLS PIPELINE
-#pragma HLS UNROLL factor=12
+#pragma HLS UNROLL factor=10
 		ldata_t res;
 		k(SVs[i], x, &res);
-		sums[i % 12] += res * alpha[i];
+		sums[i % 10] += res * alpha[i];
 		//sum += res * alpha[i];
 	}
-	for (int i = 0; i != 12; i++) {
+	for (int i = 0; i != 10; i++) {
 #pragma HLS PIPELINE
 #pragma HLS UNROLL
 		sum += sums[i];
