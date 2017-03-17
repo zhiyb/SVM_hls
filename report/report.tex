@@ -356,7 +356,6 @@ $N_{SV}$ equals the number of support vectors, which is 1050. Stages is the dept
 
 The equation shows, there is always some factors that can not be parallelised. Therefore the effect on performance will become more and more insignificant. Moreover, with a loop unroll factor of 10, DSP resource usage had already reached $95.45 \%$, impossible for further adjustments.
 
-\improvi{More?}
 
 \section{System implementation}
 
@@ -421,6 +420,33 @@ It can be seen from the table, the final optimised hardware implementation gives
 
 It can be seen from the figure that transferring the 16 elements input vectors (\texttt{tData}) and starting the classifier (\texttt{tStart}) are very inefficient and unavoidable, taking almost the same time as actual computation (\texttt{tResult}) in the final version where loop unroll factor is 10. These unavoidable overheads limit the maximum throughput achievable, result in the saturation.
 
+\subsection{SDK test}
+This test aims to record the time consumption of different procedures of the whole system. The whole progress can be divided into three parts which include data transmission from ARM core to IP core, starting, and calculation. After running this program, the total time and the time for each part will be print in the terminal. 
+\begin{lstlisting}[caption={Code for recoding execution time for different procedures},captionpos=b,label=lst:tim]
+unsigned int test_cls_hls_interrupt()
+{
+	XTime tick[4], perf[3] = {0, 0, 0};
+	unsigned int err = 0;
+	int *label = &testDataLabel[0];
+	int16_t *x = &testDataI[0][0];
+	for (size_t ix = ASIZE(testDataLabel); ix != 0; ix--) {
+		XTime_GetTime(&tick[0]);
+		XClassifier_Set_x_V(&cls, *(XClassifier_X_v *)x);
+		XTime_GetTime(&tick[1]);
+		XClassifier_Start(&cls);
+		XTime_GetTime(&tick[2]);
+		interrupt_wait();
+		XTime_GetTime(&tick[3]);
+		err += (!XClassifier_Get_output_r(&cls)) != (!*label++);
+		perf[0] += tick[1] - tick[0];
+		perf[1] += tick[2] - tick[1];
+		perf[2] += tick[3] - tick[2];
+		x += N;
+	}
+	printf("Data %llu, starting %llu, result %llu\r\n", perf[0], perf[1], perf[2]);
+	return err;
+}
+\end{lstlisting}
 \subsection{Reflection and Limitations}
 
 Different from previous dot product exercise, the SVM classifier hardware accelerator designed in this exercise improves the system throughput by a large factor. The benefits of using a massively paralleled hardware accelerator greatly overcome the overheads of interfacing the accelerator, based on the number of computations offloaded onto hardware each time. The processor core is also freed to do some other sequential computations while waiting for the results to be available, further increases system performance and efficiency.
