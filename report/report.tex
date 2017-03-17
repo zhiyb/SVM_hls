@@ -337,7 +337,7 @@ Using the global timer inside ARM core, it is possible to get cycle accurate pro
 
 The support vector classifier was also implemented as software using double precision and fixed point CORDIC inside the ARM core, as a performance comparison to hardware implementation.
 
-The performance data of software and notable hardware implementations are summarised in \tref{tbl:throughput}. \fref{fig:throughput} shows detailed hardware implementation throughputs and resource usage values.
+The performance data of software and notable hardware implementations are summarised in \tref{tbl:throughput}. \fref{fig:throughput} shows detailed hardware implementation throughputs and resource usage values. Both polling and interrupt methods for waiting results ready were implemented, however, only performance data from polling method was shown. The polling method gives slightly better overall performance values, probably due to some interfacing overheads of supporting interrupt.
 
 \begin{table}[ht]
 	% increase table row spacing, adjust to taste
@@ -355,8 +355,8 @@ The performance data of software and notable hardware implementations are summar
 		Fixed precision CORDIC	& $6.64$	\\
 		\hline
 		Unoptimised hardware	& $1.47$	\\
-		Pipelined hardware	& $148.94$	\\
-		Unrolled with factor 10	& $502.95$	\\
+		Pipelined hardware	& $152.17$	\\
+		Unrolled with factor 10	& $541.18$	\\
 		\hline
 	\end{tabular}
 \end{table}
