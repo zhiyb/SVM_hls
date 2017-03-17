@@ -33,9 +33,17 @@
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
-\newcommand{\fsize}{\small}
+\newcommand{\fsize}{\scriptsize}
 %\newcommand{\fsize}{\tiny}
 \newcommand{\tabsize}{4}
+
+\lstdefinelanguage{diff}{
+  morecomment=[f][\color{blue}]{@@},		% group identifier
+  morecomment=[f][\color{red}]-,		% deleted lines
+  morecomment=[f][\color{dkgreen}]+,		% added lines
+  morecomment=[f][\color{magenta}]{---},	% Diff header lines (must appear after +,-)
+  morecomment=[f][\color{magenta}]{+++},
+}
 
 \lstset{frame=tb,
   language=C++,
@@ -234,11 +242,35 @@ This parallel execution was done by unrolling the main loop while specifying unr
 
 \subsection{Clock timing issue}
 
-\improvi{Not meeting target clock rate.
+An unexpected issue occurred when applying unroll optimisations. The target clock period specified for this design is $10 ns$, but Vivado kept generating paths exceeding that clock constrain. By analysing the warning messages about the critical path, it is possible to resolve this issue by separating the arithmetic involved in the critical path, letting Vivado insert pipeline registers between them.
 
-Split long arithmetic operations on critical path.
+An example of resolving the timing issue is given by \lref{lst:tim}. The original multiplication and accumulation operation was broken into 10 separate \texttt{sums} variables as caches, partitioned to match the loop unroll factor. So that each parallel chain has a dedicated accumulator, summarised together in later stages. This removes the need for accumulate all 10 parallel chains in each iteration, hence reduces the length of the critical path.
 
-use one array as a cache and add the array together to get the final answer.}
+\begin{lstlisting}[language=diff,caption={Code modification to resolve timing issue},captionpos=b,label=lst:tim]
+--- old/classifier.cpp
++++ new/classifier.cpp
+@@ -62,12 +62,19 @@ void classifier(ldata_t x[N],
+ #pragma HLS INTERFACE s_axilite port=output
+ #pragma HLS INTERFACE s_axilite port=return
+     hdata_t sum = 0;
++    hdata_t sums[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
++#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=10 dim=1
+     for (int i = 0; i != ASIZE(alpha); i++) {
+ #pragma HLS PIPELINE
+ #pragma HLS UNROLL factor=10
+        ldata_t res;
+        k(SVs[i], x, &res);
+-       sum += res * alpha[i];
++       sums[i % 10] += res * alpha[i];
++    }
++    for (int i = 0; i != 10; i++) {
++#pragma HLS PIPELINE
++#pragma HLS UNROLL
++       sum += sums[i];
+     }
+     *output = sum + bias >= 0 ? 0 : 1;
+ }
+\end{lstlisting}
 
 \subsection{Design verification}
 
