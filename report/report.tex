@@ -301,11 +301,11 @@ An example of resolving the timing issue is given by \lref{lst:tim}. The origina
 
 \subsection{Design verification}
 
-\improvi{check the answer with golden file(Co simulation)?
+Correctness verifications by C simulations were done after every optimisations and code modifications, using the golden reference output generated from double precision implementation.
 
-talk about the initialisation of the array?
-warning : the variable without initialisation?
-arrar[n] = {0} ?}
+An unexpected discrepancy between Vivado HLS' C language and ISO C language standard (6.7.8.19 \cite{iso1999iec}) was discovered. All array elements must be explicitly initialised in Vivado HLS for a defined behaviour, whereas in ISO C standard, uninitialised elements in a partially initialised array should have the value 0, the same as static storage initialisation. Hence the 10 zeros written in the initialisation of \texttt{sums} in \lref{lst:tim}.
+
+After applied all optimisations, the latency reduced significantly. RTL co-simulation was done at this stage before exporting as an IP core, to ensure the exported RTL implementation has the same functionality as the C implementation.
 
 \subsection{Design evaluation}
 
