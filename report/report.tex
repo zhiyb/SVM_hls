@@ -333,6 +333,41 @@ After multiple optimisations, the improved implementation was packaged into Viva
 
 \subsection{Performance and resource usage}
 
+Using the global timer inside ARM core, it is possible to get cycle accurate profiling information.
+
+The support vector classifier was also implemented as software using double precision and fixed point CORDIC inside the ARM core, as a performance comparison to hardware implementation.
+
+The performance data of software and notable hardware implementations are summarised in \tref{tbl:throughput}. \fref{fig:throughput} shows detailed hardware implementation throughputs and resource usage values.
+
+\begin{table}[ht]
+	% increase table row spacing, adjust to taste
+	\renewcommand{\arraystretch}{1.3}
+	\caption{Performance and resource usages of system implementations}
+	\label{tbl:throughput}
+	\centering
+	% Some packages, such as MDW tools, offer better commands for making tables
+	% than the plain LaTeX2e tabular which is used here.
+	\begin{tabular}{llll}
+		\hline
+		Type			& Throughput (k vectors / second)	\\
+		\hline
+		Double precision	& $2.96$	\\
+		Fixed precision CORDIC	& $6.64$	\\
+		\hline
+		Unoptimised hardware	& $1.47$	\\
+		Pipelined hardware	& $148.94$	\\
+		Unrolled with factor 10	& $502.95$	\\
+		\hline
+	\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{throughput}
+	\caption{System throughput and resource usages versus loop unroll factor}
+	\label{fig:throughput}
+\end{figure}
+
 \subsection{Reflection and Limitations}
 
 \section{Conclusion}
