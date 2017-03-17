@@ -388,9 +388,11 @@ It can be seen from the figure that transferring the 16 elements input vectors (
 
 \subsection{Reflection and Limitations}
 
+Different from previous dot product exercise, the SVM classifier hardware accelerator designed in this exercise improves the system throughput by a large factor. The benefits of using a massively paralleled hardware accelerator greatly overcome the overheads of interfacing the accelerator, based on the number of computations offloaded onto hardware each time. The processor core is also freed to do some other sequential computations while waiting for the results to be available, further increases system performance and efficiency.
+
 \section{Conclusion}
 
-By evaluating the performance data of software and hardware implementation of the same algorithm, the advantages, use case and limiting factors of using hardware accelerators were investigated. Although the computation speed of dedicated hardware accelerator can be faster than software implementation, the data transfer performance may limit the actual efficiency.
+By evaluating the performance data of software and hardware implementation of the same algorithm, the advantages, use case and limiting factors of using hardware accelerators were investigated. Although the computation speed of dedicated hardware accelerator can be faster than software implementation, overheads such as data transfer performance may limit the actual efficiency.
 
 % References section
 \bibliographystyle{IEEEtran}
