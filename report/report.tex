@@ -254,7 +254,35 @@ The latency can be further reduced by executing multiple iterations of the suppo
 The disadvantage of this method is, the hardware resource usage will be increased by the same factor in order to implement multiple parallel chains. A trade-off between throughput and resource usage is implied.
 This parallel execution was done by unrolling the main loop while specifying unroll factor. All constant values such as support vectors and alpha implemented by ROMs need to be partitioned by the same factor to prevent Vivado duplicating the entire ROM for each parallel chain. The array partition was done by specifying the \texttt{ARRAY\_PARTITION} directive.
 
-\improvi{Insert codes?}
+\begin{lstlisting}[caption={Optimised classifier top-level function},captionpos=b,label=lst:opt_cla]
+void classifier(ldata_t x[N], int *output)
+{
+#pragma HLS ARRAY_RESHAPE variable=x cyclic factor=16 dim=1
+#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=10 dim=1
+#pragma HLS ARRAY_RESHAPE variable=SVs cyclic factor=16 dim=2
+#pragma HLS ARRAY_PARTITION variable=alpha cyclic factor=10 dim=1
+#pragma HLS INTERFACE s_axilite port=output
+#pragma HLS INTERFACE s_axilite port=return
+#pragma HLS INTERFACE s_axilite port=x
+	hdata_t sum = 0, sums[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=10 dim=1
+loop:	for (int i = 0; i != ASIZE(alpha); i++) {
+#pragma HLS PIPELINE
+#pragma HLS UNROLL factor=10
+		ldata_t res;
+		k(SVs[i], x, &res);
+		sums[i % 10] += res * alpha[i];
+	}
+	for (int i = 0; i != 10; i++) {
+#pragma HLS PIPELINE
+#pragma HLS UNROLL
+		sum += sums[i];
+	}
+	*output = sum + bias >= 0 ? 0 : 1;
+}
+\end{lstlisting}
+
+The \texttt{ARRAY\_PARTITION} directive is used for cutting the array into small parts in order to parallel the program. \texttt{ARRAY\_RESHAPE} also can separate the array, however, it will combine the array together after the progress so it is better to use inside the dot product in order to save resources. The main \texttt{for} loop is optimised by \texttt{PIPELINE} and \texttt{UNTROLL} together. The factor of \texttt{UNROLL} means the number of threads paralleled is 10. The maximum number of threads is ten because of the limitation of hard ware resources. 
 
 \subsection{Clock timing issue}
 
