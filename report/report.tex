@@ -237,6 +237,13 @@ Running RTL co-simulation using all 2000 test vectors with this order of delay i
 The interface for specified input vectors was optimised by reducing the interface width to a minimum and using the \texttt{ARRAY\_RESHAPE} directive. This directive can combine multiple elements of the input vector to a single 32-bit buffer, reduces the number of data transfers needed between the ARM core and the hardware accelerator.
 
 \subsection{Resource usage optimisation}
+In order to balanced the resources and accuracy, the bits of fix point number should be controlled by different bits of \texttt{ap\_fixed} type. The number of fractional bits for all types is 12. The only changed part is integer part, in order to have enough range to represent different data. For example, \texttt{hdata\_t} it is used for the accumulation, final result, and bias. Multiple times experimental tests are set in order to get exact number of bits for integer part of different arrays due to different range of data.
+\begin{lstlisting}[caption={Optimised data type},captionpos=b,label=lst:data_t]
+typedef ap_fixed<22, 10> hdata_t;
+typedef ap_fixed<19, 7> mdata_t;
+typedef ap_fixed<16, 4> data_t;
+typedef ap_fixed<16, 4> ldata_t;
+\end{lstlisting}
 
 \subsection{Throughput optimisation}
 
