@@ -94,7 +94,7 @@ This course work aims to design and optimise a hardware Support Vector Machine (
 
 \section{Introduction}
 
-Dedicated hardware accelerators can perform a particular task faster then generalised software design. However, there are a few trade-offs associated with using hardware accelerators. In this exercise, an SVM classifier IP core was developed and optimised on a Xilinx ZYNQ SoC FPGA using Vivado HLS toolkit. The procedure of the design and optimisation will be explained in details. Finally, the performance differences between hardware and software implementations were evaluated and discussed.
+Dedicated hardware accelerators can perform a particular task faster then generalised software design. However, there are a few trade-offs associated with using hardware accelerators. In this exercise, an SVM classifier IP core was developed and optimised on a Xilinx ZYNQ SoC FPGA using Vivado HLS toolkit. The hardware used in this exercise is Zedboard which include an ARM Cortex-A9 core and one Xilinx SoC FPGA. Those two module can be communication with several interfaces. The procedure of the design and optimisation will be explained in details. Finally, the performance differences between hardware and software implementations were evaluated and discussed.
 
 \hfill \today
 
@@ -307,6 +307,13 @@ After applied all optimisations, the latency reduced significantly. RTL co-simul
 \improvi{IP core packaging
 
 Software testing with SDK}
+After multiple optimisations, the improved IP core will be packaged in Vivado and set up in SDK as the procedure in previous dot product exercise. 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.3\columnwidth]{sdk}
+	\caption{Flow chart of SDK implementation}
+	\label{fig:ip}
+\end{figure}
 
 \section{System evaluation}
 
