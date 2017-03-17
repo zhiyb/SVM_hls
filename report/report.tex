@@ -107,7 +107,7 @@ Dedicated hardware accelerators can perform a particular task faster then genera
 \begin{align}
 	f(\bm{x}) &= sgn \left( bias + \sum_{i=1}^{N_{SV}} \alpha_i k(\bm{{sv}_i}, \bm{x}) \right)
 	\label{eq:cls}\\
-	\text{where}~k(\bm{x}, \bm{y}) &= 2 tanh(\bm{x} \cdot \bm{y})
+	\text{where}~k(\bm{x}, \bm{y}) &= tanh(2 ( \bm{x} \cdot \bm{y} ) )
 \end{align}
 
 \begin{figure}[t]
