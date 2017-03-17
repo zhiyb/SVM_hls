@@ -133,7 +133,7 @@ The precision of CORDIC can be improved by allowing more iterations, however, th
 
 \subsection{SVM classifier}
 
-The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all Support Vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal.
+The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal.
 
 \improvi{Insert code here?}
 
@@ -176,7 +176,8 @@ The original implementation without any optimisation directives gives a maximum 
 	\end{tabular}
 \end{table}
 
-\improvi{Interpret the performance and resource usage values?}
+\improvi{Interpret the performance and resource usage values?
+(for single test vector etc.)}
 
 Running RTL co-simulation with all 2000 test vectors and this order of latency will be very time-consuming and not very useful. Therefore, only C simulation was used to ensure the correctness of the unoptimised design. RTL co-simulations were still used in later optimised design.
 
@@ -186,9 +187,25 @@ Running RTL co-simulation with all 2000 test vectors and this order of latency w
 
 The interface for specified input vectors was optimised by reducing the interface width to a minimum and using the \texttt{ARRAY\_RESHAPE} directive. This directive can combine multiple elements of the input vector to a single 32-bit buffer, reduces the number of data transfers needed between the ARM core and the hardware accelerator.
 
+\improvi{Explain the ARM core and SoC somewhere before this section}
+
 \subsection{Throughput optimisation}
 
-\improvi{Pipeline, loop unrolling}
+\subsubsection{Pipelining}
+
+By using the technique of pipelining, the throughput can be greatly improved without significant increases of hardware resource usages. This can be achieved by applying the \texttt{PIPELINE} directive. Vivado HLS will automatically insert pipeline stage registers in appropriate locations. An iteration interval of 1 clock cycles was achieved by pipelining. With the addition of a few pipeline stages filling the entire pipeline beforehand, the iteration of all 1050 support vectors now takes only over 1100 clock cycles.
+
+\subsubsection{Loop unrolling}
+
+There are also some small iteration loops in the design, such as the iteration inside dot product calculation which only iterates about 16 times. These loops can be unrolled to allow parallel computation of iterations, at the cost of more hardware resource usages. This can be achieved by applying the \texttt{UNROLL} directive. Vivado HLS is capable of duplicating the loop body multiple times, and applying map-reduce techniques to resolve dependencies automatically. Together with pipelining, this can reduce the number of pipeline stages.
+
+\subsubsection{Parallel chains}
+
+The latency can be further reduced by executing multiple iterations of the support vector loop inside the main classifier function in parallel. Instead of sequentially iterates through all 1050 support vectors, ideally this parallel execution can reduce the latency by a factor of parallel chains.
+The disadvantage of this method is, the hardware resource usage will be increased by the same factor in order to implement multiple parallel chains. A trade-off between throughput and resource usage is implied.
+This parallel execution was done by unrolling the main loop while specifying unroll factor. All constant values such as support vectors and alpha implemented by ROMs need to be partitioned by the same factor to prevent Vivado duplicating the entire ROM for each parallel chain. The array partition was done by specifying the \texttt{ARRAY\_PARTITION} directive.
+
+\improvi{Insert codes?}
 
 \subsection{Clock timing issue}
 
