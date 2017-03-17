@@ -364,6 +364,8 @@ The performance data of software and notable hardware implementations are summar
 	\end{tabular}
 \end{table}
 
+It can be seen from the table, the final optimised hardware implementation gives a speed-up of 182 times over the double precision and 80.5 times over the fixed precision software implementation, quite substantial. However, as the figure suggests, the throughput almost saturates as loop unroll factor increases above 9.
+
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=0.8\columnwidth]{throughput}
@@ -371,7 +373,7 @@ The performance data of software and notable hardware implementations are summar
 	\label{fig:throughput}
 \end{figure}
 
-\fref{fig:time} shows a detailed breakdown of total time spent on each stage of interfacing the hardware SVM classifier.
+\fref{fig:time} shows a detailed breakdown of total time spent on each stage of interfacing the hardware SVM classifier. The time values shown on the figure were summarised for all 2000 test vectors.
 
 \begin{figure}[t]
 	\centering
@@ -379,6 +381,8 @@ The performance data of software and notable hardware implementations are summar
 	\caption{Detailed time usage breakdown of interfacing hardware classifier}
 	\label{fig:time}
 \end{figure}
+
+It can be seen from the figure that transferring the 16 elements input vectors (\texttt{tData}) and starting the classifier (\texttt{tStart}) are very inefficient and unavoidable, taking almost the same time as actual computation (\texttt{tResult}) in the final version where loop unroll factor is 10. These unavoidable overheads limit the maximum throughput achievable, result in the saturation.
 
 \subsection{Reflection and Limitations}
 
