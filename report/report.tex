@@ -123,7 +123,6 @@ According to the provided sample data, vectors have a width of 16 elements and t
 
 Dot product between 2 vectors was calculated using the module designed previously in Part I.
 
-\improvi{More descripsions}
 
 \subsection{\texttt{tanh} calculation}
 
@@ -145,7 +144,7 @@ In order to improve the performance of the \texttt{tanh()}, the algorithm for op
 \cosh(\theta + \alpha) = \cosh(\theta)\cosh(\alpha) + \sinh(\theta)\sinh(\alpha)
 \end{align}
 
-As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in order to increase the range of CORDIC.  In addition, declare a flag (\texttt{neg})to store whether the input is negative. If it is negative set the flag to one and invert the value to positive. Furthermore, it is easy to observe that $tanh()$ is infinitely approximate to 1 when the angle lager than 6 \texttt{rads}. As the result, when the input angle is larger than 6 \texttt{rads}, the result will be directly equal to \texttt{1}. Otherwise, the \texttt{trigo\_index} will be equal to the \texttt{round(theta)}. Also, \texttt{trigo\_index} is the index of look up table(LUT) of \texttt{lut\_sinh[]} and \texttt{lut\_cosh[]}. These value is used as the offset $\theta$ in the previous equation \eref{eq:tri}. After that the rest part of the result will be calculated inside \texttt{cordic()}. The results from \texttt{cordic()} can be used as $\alpha$ in equation \eref{eq:tri}. Moreover, do the operation from trigonometric rules inside \lref{lst:ext}, it will combine the results from CORDIC and offset in order to get the final output. Finally, if the \texttt{neg} is one, invert the output to negative. 
+As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in order to increase the range of CORDIC.  In addition, declare a flag (\texttt{neg})to store whether the input is negative. If it is negative set the flag to one and invert the value to positive. Furthermore, it is easy to observe that $tanh()$ is infinitely approximate to 1 when the angle lager than 6 \texttt{rads}. As the result, when the input angle is larger than 6 \texttt{rads}, the result will be directly equal to \texttt{1}. Otherwise, the \texttt{trigo\_index} will be equal to the \texttt{round(theta)}. Also, \texttt{trigo\_index} is the index of look up table(LUT) of \texttt{lut\_sinh[]} and \texttt{lut\_cosh[]}. These value is used as the offset $\theta$ in the previous equation \eref{eq:tri}. After that the rest part of the result will be calculated inside \texttt{cordic()}. The results from \texttt{cordic()} can be used as $\alpha$ in equation \eref{eq:tri}. Moreover, do the operation from trigonometric rules inside \lref{lst:ext}, it will combine the results from CORDIC and offset in order to get the final output. Finally, if the \texttt{neg} is one, invert the output to negative. \cite{llamocca2007fixed}
 
 \begin{lstlisting}[caption={Extending the range of CORDIC},captionpos=b,label=lst:ext]
 	if (theta >= (mdata_t)6.0) {
@@ -166,10 +165,38 @@ As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in ord
 \end{lstlisting}
 \subsection{SVM classifier}
 
-The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal.
+The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal. 
 
-\improvi{Insert code here?}
-
+\begin{lstlisting}[caption={Top-level SVM classifier},captionpos=b,label=lst:clas]
+void classifier(ldata_t x[N], int *output)
+{
+//#pragma HLS ARRAY_PARTITION variable=x cyclic factor=16 dim=1
+#pragma HLS ARRAY_RESHAPE variable=x cyclic factor=16 dim=1
+#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=10 dim=1
+//#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=16 dim=2
+#pragma HLS ARRAY_RESHAPE variable=SVs cyclic factor=16 dim=2
+#pragma HLS ARRAY_PARTITION variable=alpha cyclic factor=10 dim=1
+#pragma HLS INTERFACE s_axilite port=output
+#pragma HLS INTERFACE s_axilite port=return
+#pragma HLS INTERFACE s_axilite port=x
+	hdata_t sum = 0, sums[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=10 dim=1
+loop:	for (int i = 0; i != ASIZE(alpha); i++) {
+#pragma HLS PIPELINE
+#pragma HLS UNROLL factor=10
+		ldata_t res;
+		k(SVs[i], x, &res);
+		sums[i % 10] += res * alpha[i];
+		//sum += res * alpha[i];
+	}
+	for (int i = 0; i != 10; i++) {
+#pragma HLS PIPELINE
+#pragma HLS UNROLL
+		sum += sums[i];
+	}
+	*output = sum + bias >= 0 ? 0 : 1;
+}	
+\end{lstlisting}
 \subsection{Hardware verification}
 
 \subsubsection{Test bench}
