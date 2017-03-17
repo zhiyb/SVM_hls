@@ -165,38 +165,29 @@ As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in ord
 \end{lstlisting}
 \subsection{SVM classifier}
 
-The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal. 
+The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal. The function \texttt{k()} is the same as the k inside of equation \eref{eq:cls}. It will calculate the dot product of two vectors, and apply \texttt{tanh()} to the dot product in order to get the output. Finally, output will be checked whether it is negative. If it is positive, then output 0, otherwise output 1.
 
 \begin{lstlisting}[caption={Top-level SVM classifier},captionpos=b,label=lst:clas]
+static void k(ldata_t u[N], ldata_t v[N], ldata_t *output)
+{
+	mdata_t res;
+	dotp(u, v, &res);
+	res = res << 1u;	// * 2
+	fp_tanh(res, output);
+}
+
 void classifier(ldata_t x[N], int *output)
 {
-//#pragma HLS ARRAY_PARTITION variable=x cyclic factor=16 dim=1
-#pragma HLS ARRAY_RESHAPE variable=x cyclic factor=16 dim=1
-#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=10 dim=1
-//#pragma HLS ARRAY_PARTITION variable=SVs cyclic factor=16 dim=2
-#pragma HLS ARRAY_RESHAPE variable=SVs cyclic factor=16 dim=2
-#pragma HLS ARRAY_PARTITION variable=alpha cyclic factor=10 dim=1
-#pragma HLS INTERFACE s_axilite port=output
-#pragma HLS INTERFACE s_axilite port=return
-#pragma HLS INTERFACE s_axilite port=x
-	hdata_t sum = 0, sums[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#pragma HLS ARRAY_PARTITION variable=sums cyclic factor=10 dim=1
-loop:	for (int i = 0; i != ASIZE(alpha); i++) {
-#pragma HLS PIPELINE
-#pragma HLS UNROLL factor=10
+	hdata_t sum = 0;
+	for (int i = 0; i != ASIZE(alpha); i++) {
 		ldata_t res;
 		k(SVs[i], x, &res);
-		sums[i % 10] += res * alpha[i];
-		//sum += res * alpha[i];
-	}
-	for (int i = 0; i != 10; i++) {
-#pragma HLS PIPELINE
-#pragma HLS UNROLL
-		sum += sums[i];
+		sum += res * alpha[i];
 	}
 	*output = sum + bias >= 0 ? 0 : 1;
 }	
 \end{lstlisting}
+
 \subsection{Hardware verification}
 
 \subsubsection{Test bench}
