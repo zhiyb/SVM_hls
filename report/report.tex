@@ -110,7 +110,7 @@ Dedicated hardware accelerators can perform a particular task faster then genera
 	\text{where}~k(\bm{x}, \bm{y}) &= 2 tanh(\bm{x} \cdot \bm{y})
 \end{align}
 
-\begin{figure}[ht]
+\begin{figure}[t]
 	\centering
 	\includegraphics[width=0.6\columnwidth]{IP}
 	\caption{Flow chart of purposed SVM classifier IP core}
@@ -146,7 +146,7 @@ In order to improve the performance of the \texttt{tanh()}, the algorithm for op
 
 As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in order to increase the range of CORDIC.  In addition, declare a flag (\texttt{neg})to store whether the input is negative. If it is negative set the flag to one and invert the value to positive. Furthermore, it is easy to observe that $tanh()$ is infinitely approximate to 1 when the angle lager than 6 \texttt{rads}. As the result, when the input angle is larger than 6 \texttt{rads}, the result will be directly equal to \texttt{1}. Otherwise, the \texttt{trigo\_index} will be equal to the \texttt{round(theta)}. Also, \texttt{trigo\_index} is the index of look up table(LUT) of \texttt{lut\_sinh[]} and \texttt{lut\_cosh[]}. These value is used as the offset $\theta$ in the previous equation \eref{eq:tri}. After that the rest part of the result will be calculated inside \texttt{cordic()}. The results from \texttt{cordic()} can be used as $\alpha$ in equation \eref{eq:tri}. Moreover, do the operation from trigonometric rules inside \lref{lst:ext}, it will combine the results from CORDIC and offset in order to get the final output. Finally, if the \texttt{neg} is one, invert the output to negative. \cite{llamocca2007fixed}
 
-\begin{lstlisting}[caption={Extending the range of CORDIC},captionpos=b,label=lst:ext]
+\begin{lstlisting}[float,floatplacement=h,caption={Extending the range of CORDIC},captionpos=b,label=lst:ext]
 	if (theta >= (mdata_t)6.0) {
 		result = 1.0;
 	} else {
@@ -166,9 +166,9 @@ As equations \eref{eq:tri} describe, the $\theta$ can be used as a offset in ord
 
 \subsection{SVM classifier}
 
-The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal. The function \texttt{k()} is the same as the k inside of equation \eref{eq:cls}. It will calculate the dot product of two vectors, and apply \texttt{tanh()} to the dot product in order to get the output. Finally, output will be checked whether it is negative. If it is positive, then output 0, otherwise output 1.
+The top-level SVM classifier was designed according to the flow chart \fref{fig:ip}, as shown in \lref{lst:clas}. It iterates through all support vectors, accumulates each result, finally output a boolean value according to the sign of accumulator after bias removal. The function \texttt{k()} is the same as the k inside of equation \eref{eq:cls}. It will calculate the dot product of two vectors, and apply \texttt{tanh()} to the dot product in order to get the output. Finally, output will be checked whether it is negative. If it is positive, then output 0, otherwise output 1.
 
-\begin{lstlisting}[caption={Top-level SVM classifier},captionpos=b,label=lst:clas]
+\begin{lstlisting}[float,floatplacement=h,caption={Top-level SVM classifier},captionpos=b,label=lst:clas]
 static void k(ldata_t u[N], ldata_t v[N], ldata_t *output)
 {
 	mdata_t res;
@@ -237,8 +237,10 @@ Running RTL co-simulation using all 2000 test vectors with this order of delay i
 The interface for specified input vectors was optimised by reducing the interface width to a minimum and using the \texttt{ARRAY\_RESHAPE} directive. This directive can combine multiple elements of the input vector to a single 32-bit buffer, reduces the number of data transfers needed between the ARM core and the hardware accelerator.
 
 \subsection{Resource usage optimisation}
-In order to balanced the resources and accuracy, the bits of fix point number should be controlled by different bits of \texttt{ap\_fixed} type. The number of fractional bits for all types is 12. The only changed part is integer part, in order to have enough range to represent different data. For example, \texttt{hdata\_t} it is used for the accumulation, final result, and bias. Multiple times experimental tests are set in order to get exact number of bits for integer part of different arrays due to different range of data.
-\begin{lstlisting}[caption={Optimised data type},captionpos=b,label=lst:data_t]
+
+In order to balanced the resources and accuracy, the bits of fix point number should be controlled by different bits of \texttt{ap\_fixed} type, as shown in \lref{lst:data_t}. The number of fractional bits for all types is 12. The only changed part is integer part, in order to have enough range to represent different data. For example, \texttt{hdata\_t} it is used for the accumulation, final result, and bias. Multiple times experimental tests are set in order to get exact number of bits for integer part of different arrays due to different range of data.
+
+\begin{lstlisting}[float,floatplacement=h,caption={Optimised data type},captionpos=b,label=lst:data_t]
 typedef ap_fixed<22, 10> hdata_t;
 typedef ap_fixed<19, 7> mdata_t;
 typedef ap_fixed<16, 4> data_t;
@@ -260,8 +262,9 @@ There are also some small iteration loops in the design, such as the iteration i
 The latency can be further reduced by executing multiple iterations of the support vector loop inside the main classifier function in parallel. Instead of sequentially iterates through all 1050 support vectors, ideally this parallel execution can reduce the latency by a factor of parallel chains.
 The disadvantage of this method is, the hardware resource usage will be increased by the same factor in order to implement multiple parallel chains. A trade-off between throughput and resource usage is implied.
 This parallel execution was done by unrolling the main loop while specifying unroll factor. All constant values such as support vectors and alpha implemented by ROMs need to be partitioned by the same factor to prevent Vivado duplicating the entire ROM for each parallel chain. The array partition was done by specifying the \texttt{ARRAY\_PARTITION} directive.
+\lref{lst:opt_cla} shows the classifier function with optimisations applied.
 
-\begin{lstlisting}[caption={Optimised classifier top-level function},captionpos=b,label=lst:opt_cla]
+\begin{lstlisting}[float,floatplacement=h,caption={Optimised classifier top-level function},captionpos=b,label=lst:opt_cla]
 void classifier(ldata_t x[N], int *output)
 {
 #pragma HLS ARRAY_RESHAPE variable=x cyclic factor=16 dim=1
@@ -293,11 +296,18 @@ The \texttt{ARRAY\_PARTITION} directive is used for cutting the array into small
 
 \subsection{Clock timing issue}
 
+\begin{figure*}[!t]
+	\centering
+	\includegraphics[width=0.9\textwidth]{bd}
+	\caption{Block diagram design of the entire system}
+	\label{fig:bd}
+\end{figure*}
+
 An unexpected issue occurred when applying unroll optimisations. The target clock period specified for this design is $10 ns$, but Vivado kept generating paths exceeding that clock constrain. By analysing the warning messages about the critical path, it is possible to resolve this issue by separating the arithmetic involved in the critical path, letting Vivado insert pipeline registers between them.
 
 An example of resolving the timing issue is given by \lref{lst:tim}. The original multiplication and accumulation operation was broken into 10 separate \texttt{sums} variables as caches, partitioned to match the loop unroll factor. So that each parallel chain has a dedicated accumulator, summarised together in later stages. This removes the need for accumulate all 10 parallel chains in each iteration, hence reduces the length of the critical path.
 
-\begin{lstlisting}[language=diff,caption={Code modification to resolve timing issue},captionpos=b,label=lst:tim]
+\begin{lstlisting}[float,floatplacement=h,language=diff,caption={Code modification to resolve timing issue},captionpos=b,label=lst:tim]
 --- old/classifier.cpp
 +++ new/classifier.cpp
 @@ -62,12 +62,19 @@ void classifier(ldata_t x[N],
@@ -324,6 +334,7 @@ An example of resolving the timing issue is given by \lref{lst:tim}. The origina
 \end{lstlisting}
 
 \subsection{New \texttt{tanh()} reflection}
+
 As the subsection \ref{subsubsec:range} mentioned, there is a new technique to enhance the range and accuracy of the \texttt{tanh()} fuction. However, it needs more resource and more instructions to complete, which means that it has higher latency than the previous CORDIC (133 cycles). However, the final latency of the design is shown in \fref{fig:latency}, which is 150 cycle. Although there are 17 more cycles to complete the calculation, it gets as accurate as the double precision answer generated by software test bench. Because if using the previous method to complete \texttt{tanh()} there are in total 169 errors, nonetheless it is different from the result come from the test bench which is 170 errors. As the result, the final implementation choose a more accuracy method in order to get enhanced classification.
 
 \subsection{Design verification}
@@ -359,7 +370,7 @@ The equation shows, there is always some factors that can not be parallelised. T
 
 \section{System implementation}
 
-After multiple optimisations, the improved implementation was packaged into Vivado as an IP core. The setup of Vivado and SDK were the same as in previous dot product exercise. \fref{fig:sdk} describes an abstract structural overview of the testing program running on the ARM core, developed on the SDK.
+After multiple optimisations, the improved implementation was packaged into Vivado as an IP core. The setup of Vivado and SDK were the same as in previous dot product exercise. \fref{fig:bd} shows the block diagram design of the system on FPGA. \fref{fig:sdk} describes an abstract structural overview of the testing program running on the ARM core, developed on the SDK.
 
 \begin{figure}[t]
 	\centering
@@ -370,9 +381,55 @@ After multiple optimisations, the improved implementation was packaged into Viva
 
 \section{System evaluation}
 
-\subsection{Performance and resource usage}
-
 Using the global timer inside ARM core, it is possible to get cycle accurate profiling information.
+
+\lref{lst:test_int} shows one example of the tests. This test aims to record the time consumption of different procedures of the whole system. The whole progress can be divided into three parts which include data transmission from ARM core to IP core, starting, and calculation. After running this program, the total time and the time for each part will be print in the terminal. 
+
+\begin{lstlisting}[float,floatplacement=h,caption={Code for recoding execution time for different procedures},captionpos=b,label=lst:test_int]
+unsigned int test_cls_hls_interrupt()
+{
+	XTime tick[4], perf[3] = {0, 0, 0};
+	unsigned int err = 0;
+	int *label = &testDataLabel[0];
+	int16_t *x = &testDataI[0][0];
+	for (size_t ix = ASIZE(testDataLabel); ix != 0; ix--) {
+		XTime_GetTime(&tick[0]);
+		XClassifier_Set_x_V(&cls, *(XClassifier_X_v *)x);
+		XTime_GetTime(&tick[1]);
+		XClassifier_Start(&cls);
+		XTime_GetTime(&tick[2]);
+		interrupt_wait();
+		XTime_GetTime(&tick[3]);
+		err += (!XClassifier_Get_output_r(&cls)) != (!*label++);
+		perf[0] += tick[1] - tick[0];
+		perf[1] += tick[2] - tick[1];
+		perf[2] += tick[3] - tick[2];
+		x += N;
+	}
+	printf("Data %llu, starting %llu, result %llu\r\n", perf[0], perf[1], perf[2]);
+	return err;
+}
+\end{lstlisting}
+
+An example output of the test program was given by \lref{lst:test_int_out}.
+
+\begin{lstlisting}[float,floatplacement=h,language=,caption={Example output from testing program},captionpos=b,label=lst:test_int_out]
+Build @ Mar 16 2017 22:15:28
+HLS peripheral is ready
+Converting data...
+Conversion finished, 863684 ticks
+
+Starting tests...
+<double precision classifier> finished, 450697222 ticks, error count 170
+<fixed point classifier> finished, 200704648 ticks, error count 170
+Data 1097219, starting 266571, result 1100144
+<HLS classifier by polling> finished, 2651697 ticks, error count 170
+Data 1089646, starting 267273, result 1287449
+<HLS classifier by interrupt> finished, 2826942 ticks, error count 170
+SVM classifiers testing done.
+\end{lstlisting}
+
+\subsection{Performance and resource usage}
 
 The support vector classifier was also implemented as software using double precision and fixed point CORDIC inside the ARM core, as a performance comparison to hardware implementation.
 
@@ -402,7 +459,7 @@ The performance data of software and notable hardware implementations are summar
 
 It can be seen from the table, the final optimised hardware implementation gives a speed-up of 182 times over the double precision and 80.5 times over the fixed precision software implementation, quite substantial. However, as the figure suggests, the throughput almost saturates as loop unroll factor increases above 9.
 
-\begin{figure}[t]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.9\columnwidth]{throughput}
 	\caption{System throughput and resource usages versus loop unroll factor}
@@ -411,7 +468,7 @@ It can be seen from the table, the final optimised hardware implementation gives
 
 \fref{fig:time} shows a detailed breakdown of total time spent on each stage of interfacing the hardware SVM classifier. The time values shown on the figure were summarised for all 2000 test vectors.
 
-\begin{figure}[t]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.9\columnwidth]{time}
 	\caption{Detailed time usage breakdown of interfacing hardware classifier}
@@ -420,33 +477,6 @@ It can be seen from the table, the final optimised hardware implementation gives
 
 It can be seen from the figure that transferring the 16 elements input vectors (\texttt{tData}) and starting the classifier (\texttt{tStart}) are very inefficient and unavoidable, taking almost the same time as actual computation (\texttt{tResult}) in the final version where loop unroll factor is 10. These unavoidable overheads limit the maximum throughput achievable, result in the saturation.
 
-\subsection{SDK test}
-This test aims to record the time consumption of different procedures of the whole system. The whole progress can be divided into three parts which include data transmission from ARM core to IP core, starting, and calculation. After running this program, the total time and the time for each part will be print in the terminal. 
-\begin{lstlisting}[caption={Code for recoding execution time for different procedures},captionpos=b,label=lst:tim]
-unsigned int test_cls_hls_interrupt()
-{
-	XTime tick[4], perf[3] = {0, 0, 0};
-	unsigned int err = 0;
-	int *label = &testDataLabel[0];
-	int16_t *x = &testDataI[0][0];
-	for (size_t ix = ASIZE(testDataLabel); ix != 0; ix--) {
-		XTime_GetTime(&tick[0]);
-		XClassifier_Set_x_V(&cls, *(XClassifier_X_v *)x);
-		XTime_GetTime(&tick[1]);
-		XClassifier_Start(&cls);
-		XTime_GetTime(&tick[2]);
-		interrupt_wait();
-		XTime_GetTime(&tick[3]);
-		err += (!XClassifier_Get_output_r(&cls)) != (!*label++);
-		perf[0] += tick[1] - tick[0];
-		perf[1] += tick[2] - tick[1];
-		perf[2] += tick[3] - tick[2];
-		x += N;
-	}
-	printf("Data %llu, starting %llu, result %llu\r\n", perf[0], perf[1], perf[2]);
-	return err;
-}
-\end{lstlisting}
 \subsection{Reflection and Limitations}
 
 Different from previous dot product exercise, the SVM classifier hardware accelerator designed in this exercise improves the system throughput by a large factor. The benefits of using a massively paralleled hardware accelerator greatly overcome the overheads of interfacing the accelerator, based on the number of computations offloaded onto hardware each time. The processor core is also freed to do some other sequential computations while waiting for the results to be available, further increases system performance and efficiency.
